@@ -32,15 +32,26 @@ endif()
 # Prevent CMake falls back to the latest standard the compiler does support
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
 FIND_PACKAGE( Marlin 1.0 REQUIRED )
 FIND_PACKAGE( MarlinUtil REQUIRED )
 #FIND_PACKAGE( ROOT REQUIRED COMPONENTS Minuit2 TMVA TreePlayer )
 FIND_PACKAGE( ROOT REQUIRED COMPONENTS Minuit2 TMVA TreePlayer Gui Geom Eve Minuit XMLIO RGL Ged EG MLP )
 #FIND_PACKAGE( Torch REQUIRED )
 FIND_PACKAGE( LCFIVertex REQUIRED )
-FIND_PACKAGE( onnxruntime 1.19.2 REQUIRED)
+FIND_PACKAGE( onnxruntime 1.17.1 REQUIRED)
 FIND_PACKAGE( nlohmann_json REQUIRED)
+
+# Allow injection of ONNXRUNTIMEPATH variable from environment variables
+IF(DEFINED ENV{ONNXRUNTIMEPATH})
+	IF (NOT EXISTS "$ENV{ONNXRUNTIMEPATH}/include/onnxruntime/onnxruntime_cxx_api.h")
+		message(FATAL_ERROR "ONNXRUNTIMEPATH $ENV{ONNXRUNTIME_ROOT} invalid." )
+	ELSE()
+		message(STATUS "Using ONNXRUNTIMEPATH $ENV{ONNXRUNTIMEPATH}")
+
+		set(onnxruntime_INCLUDE_DIRS $ENV{ONNXRUNTIMEPATH}/include)
+		set(onnxruntime_LIBRARY $ENV{ONNXRUNTIMEPATH}/lib/libonnxruntime.so)
+	ENDIF()
+ENDIF()
 
 #set(JSON_BuildTests OFF CACHE INTERNAL "")
 #add_subdirectory(nlohmann_json)
