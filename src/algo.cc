@@ -2,6 +2,7 @@
 #include <math.h>
 
 #include "lcfiplus.h"
+#include "marlin/VerbosityLevels.h"
 
 //#define R 0.61803399
 //#define C (1.0-R)
@@ -53,7 +54,7 @@ void powell(vector<float> p, int n, float ftol, int* iter, float* fret,
       return;
     }
     if (*iter == ITMAX) {
-      fprintf(stderr,"powell: exceeding maximum iterations\n");
+      streamlog_out(ERROR) << "powell: exceeding maximum iterations" << endl;
       exit(1);
     }
     for (int j=0; j<n; ++j) {
@@ -225,7 +226,7 @@ float brent(float ax, float bx, float cx, float (*f)(float), float tol, float* x
       }
     }
   }
-  fprintf(stderr,"too many iterations in brent");
+  streamlog_out(ERROR) << "too many iterations in brent" << endl;
   exit(1);
   *xmin=x;
   return fx;

@@ -2,6 +2,7 @@
 
 #include "lcfiplus.h"
 #include "geometry.h"
+#include "marlin/VerbosityLevels.h"
 
 #include "Math/Functor.h"
 //#include "Math/GSLMinimizer1D.h"
@@ -90,7 +91,7 @@ double Point::LogLikelihood(const TVector3& p)const {
   double variance = ROOT::Math::Similarity(dif, inverr);
 
   if (variance < 0) {
-    fprintf(stderr,"error: variance is negative (%f)\n",variance);
+    streamlog_out(ERROR) << "error: variance is negative (" << variance << ")" << endl;
     return -1e10;
   }
 
@@ -130,19 +131,21 @@ double Helix::Variance(const TVector3& p, double t)const {
 
   //int ret;
   //errXyz.Inverse(ret);
-  //if (ret != 0) fprintf(stderr,"error: matrix inversion failed!\n");
+  //if (ret != 0) fprintf(streamlog_out(ERROR),"error: matrix inversion failed!\n");
   bool success = errXyz.Invert();
-  if (success == false) fprintf(stderr,"error: matrix inversion failed!\n");
+  if (success == false) {
+    streamlog_out(ERROR) << "error: matrix inversion failed!" << endl;
+  }
   double variance = ROOT::Math::Similarity(dif,errXyz);
 
   if (variance < 0) {
-    fprintf(stderr,"helix variance is negative: %f\n",variance);
-    fprintf(stderr,"ref-point=(%f,%f,%f)\n",p.X(),p.Y(),p.Z());
-    fprintf(stderr,"pos=(%f,%f,%f) at t=%f\n",xyz(0),xyz(1),xyz(2),t);
-    fprintf(stderr,"errXyz=\n");
-    fprintf(stderr,"[ %f, %f, %f ] \n",errXyz(0,0),errXyz(0,1),errXyz(0,2));
-    fprintf(stderr,"[ %f, %f, %f ] \n",errXyz(1,0),errXyz(1,1),errXyz(1,2));
-    fprintf(stderr,"[ %f, %f, %f ] \n",errXyz(2,0),errXyz(2,1),errXyz(2,2));
+    streamlog_out(ERROR) << "helix variance is negative: " << variance << endl;
+    streamlog_out(ERROR) << "ref-point=(" << p.X() << "," << p.Y() << "," << p.Z() << endl;
+    streamlog_out(ERROR) << "pos=(" << xyz(0) << "," << xyz(1) << "," << xyz(2) << ") at t=" << t << endl;
+    streamlog_out(ERROR) << "errXyz=" << endl;
+    streamlog_out(ERROR) << "[ " << errXyz(0,0) << "," << errXyz(0,1) << "," << errXyz(0,2) << "]" << endl;
+    streamlog_out(ERROR) << "[ " << errXyz(1,0) << "," << errXyz(1,1) << "," << errXyz(1,2) << "]" << endl;
+    streamlog_out(ERROR) << "[ " << errXyz(2,0) << "," << errXyz(2,1) << "," << errXyz(2,2) << "]" << endl;
     return 1e10;
   }
 
@@ -294,7 +297,7 @@ double Helix::LogLikelihood(const TVector3& p, double& tmin)const {
   dbrent(t-bdy,t,t+bdy, &vf, &dvf, 1e-4, tmin);
   double variance = Variance(p,tmin);
   if (variance < 0) {
-    fprintf(stderr,"error: variance is negative. var=%f, p=(%f,%f,%f), t=%f)\n",variance,p[0],p[1],p[2],tmin);
+    streamlog_out(ERROR) << "error: variance is negative. var=" << variance << ", p=(" << p[0] << "," << p[1] << "," << p[2] << "), t=" << tmin << ")" << endl;
     return -1e10;
   }
   return -variance;
@@ -356,7 +359,7 @@ double Helix::LogLikelihood(const TVector3& p, double& tmin)const {
 //		return -Variance(p, minimizer.XMinimum());
 
   if (variance < 0) {
-    fprintf(stderr,"error: variance is negative. var=%f, p=(%f,%f,%f), t=%f)\n",variance,p[0],p[1],p[2],tmin);
+    streamlog_out(ERROR) << "error: variance is negative. var=" << variance << ", p=(" << p[0] << "," << p[1] << "," << p[2] << "), t=" << tmin << endl;
     return -1e10;
   }
   return -variance;
@@ -486,12 +489,12 @@ void Helix::GetPosErr(double t, SVector3& pos, SMatrixSym3& err, SMatrix53& trac
   trackToXyz(4,2) = r*t;						// dz/dtanlambda
 
   /*
-  fprintf(stderr,"track matrix *********\n");
-  fprintf(stderr,"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(0,0),_err(0,1),_err(0,2),_err(0,3),_err(0,4));
-  fprintf(stderr,"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(1,0),_err(1,1),_err(1,2),_err(1,3),_err(1,4));
-  fprintf(stderr,"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(2,0),_err(2,1),_err(2,2),_err(2,3),_err(2,4));
-  fprintf(stderr,"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(3,0),_err(3,1),_err(3,2),_err(3,3),_err(3,4));
-  fprintf(stderr,"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(4,0),_err(4,1),_err(4,2),_err(4,3),_err(4,4));
+  fprintf(streamlog_out(ERROR),"track matrix *********\n");
+  fprintf(streamlog_out(ERROR),"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(0,0),_err(0,1),_err(0,2),_err(0,3),_err(0,4));
+  fprintf(streamlog_out(ERROR),"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(1,0),_err(1,1),_err(1,2),_err(1,3),_err(1,4));
+  fprintf(streamlog_out(ERROR),"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(2,0),_err(2,1),_err(2,2),_err(2,3),_err(2,4));
+  fprintf(streamlog_out(ERROR),"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(3,0),_err(3,1),_err(3,2),_err(3,3),_err(3,4));
+  fprintf(streamlog_out(ERROR),"( %.10e, %.10e, %.10e, %.10e, %.10e )\n",_err(4,0),_err(4,1),_err(4,2),_err(4,3),_err(4,4));
   //*/
 
   // xyz error matrix
@@ -749,7 +752,7 @@ TVector3 Helix::ClosePoint(const Helix& hel)const {
   double r1 = fabs(1./_hel(iom));
   double r2 = fabs(1./hel._hel(iom));
 
-  //fprintf(stderr,"_hel(iom)=%f,  hel._hel(iom)=%f\n",_hel(iom),hel._hel(iom));
+  //fprintf(streamlog_out(ERROR),"_hel(iom)=%f,  hel._hel(iom)=%f\n",_hel(iom),hel._hel(iom));
   if (r2>r1) return hel.ClosePoint(*this);
   assert(r1>=r2);
 
@@ -1067,16 +1070,19 @@ double VertexLine::Variance(const TVector3& p, double t)const {
   err(2,2) = covSec[Vertex::zz] * corr + covIP[Vertex::zz];
 
   bool success = err.Invert();
-  if (success == false) fprintf(stderr,"error: matrix inversion failed!\n");
+  if (success == false) {
+    streamlog_out(ERROR) << "error: matrix inversion failed!" << endl;
+  }
+  
   double variance = ROOT::Math::Similarity(difs,err);
   if (variance < 0) {
-    fprintf(stderr,"vertexline variance is negative: %f\n",variance);
-    fprintf(stderr,"ref-point=(%f,%f,%f)\n",p.X(),p.Y(),p.Z());
-    fprintf(stderr,"pos=(%f,%f,%f) at t=%f\n",pos.x(), pos.y(), pos.z(),t);
-    fprintf(stderr,"err=\n");
-    fprintf(stderr,"[ %f, %f, %f ] \n",err(0,0),err(0,1),err(0,2));
-    fprintf(stderr,"[ %f, %f, %f ] \n",err(1,0),err(1,1),err(1,2));
-    fprintf(stderr,"[ %f, %f, %f ] \n",err(2,0),err(2,1),err(2,2));
+    streamlog_out(ERROR) << "vertexline variance is negative: " << variance << endl;
+    streamlog_out(ERROR) << "ref-point=(" << p.X() << "," << p.Y() << "," << p.Z() << endl;
+    streamlog_out(ERROR) << "pos=(" << pos.x() << "," << pos.y() << "," << pos.z() << ") at t=" << t << endl;
+    streamlog_out(ERROR) << "err=" << endl;
+    streamlog_out(ERROR) << "[ " << err(0,0) << "," << err(0,1) << "," << err(0,2) << "]" << endl;
+    streamlog_out(ERROR) << "[ " << err(1,0) << "," << err(1,1) << "," << err(1,2) << "]" << endl;
+    streamlog_out(ERROR) << "[ " << err(2,0) << "," << err(2,1) << "," << err(2,2) << "]" << endl;
     return 1e10;
   }
 
@@ -1129,7 +1135,7 @@ double VertexLine::LogLikelihood(const TVector3& p, double& tmin)const {
 //		return -Variance(p, minimizer.XMinimum());
 
   if (variance < 0) {
-    fprintf(stderr,"error: variance is negative. var=%f, p=(%f,%f,%f), t=%f)\n",variance,p[0],p[1],p[2],tmin);
+    streamlog_out(ERROR) << "error: variance is negative. var=" << variance << ", p=(" << p[0] << "," << p[1] << "," << p[2] << "), t=" << tmin << endl;
     return -1e10;
   }
   return -variance;
@@ -1216,7 +1222,7 @@ double Helix::LongitudinalDeviation(const TVector3& vtxPoint, const Vertex* prim
   SVector3 dif(vtxdir.x(), vtxdir.y(), vtxdir.z());
 
   bool success = errXyz.Invert();
-  if (success == false) fprintf(stderr,"error: matrix inversion failed!\n");
+  if (success == false) fprintf(streamlog_out(ERROR),"error: matrix inversion failed!\n");
   double variance = ROOT::Math::Similarity(dif,errXyz);
 
   return variance;
