@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <vector>
 #include <iostream>
+#include "marlin/VerbosityLevels.h"
 
 using namespace std;
 
@@ -119,7 +120,7 @@ double brent(double ax, double bx, double cx, T* obj, double tol, double& xmin) 
       }
     }
   }
-  fprintf(stderr,"too many iterations in brent()\n");
+  streamlog_out(ERROR) << "too many iterations in brent()" << endl;
   xmin=x;
   return fx;
 }
@@ -203,7 +204,7 @@ double dbrent(double ax, double bx, double cx, T* obj, U* dobj, double tol, doub
       }
     }
   }
-  fprintf(stderr,"too many iterations in dbrent\n");
+  streamlog_out(ERROR) << "too many iterations in dbrent" << endl;
   return 0.0;
 }
 
@@ -253,8 +254,11 @@ void lnsrch(int n, double xold[], double fold, double g[], double p[], double x[
         if (a == 0.0) tmplam = -slope/(2.0*b);
         else {
           disc=b*b-3.0*a*slope;
-          if (disc<0.0) fprintf(stderr,"Roundoff problem in lnsrch.\n");
-          else tmplam=(-b+sqrt(disc))/(3.0*a);
+          if (disc<0.0) {
+            streamlog_out(ERROR) << "Roundoff problem in lnsrch." << endl;
+          } else {
+            tmplam=(-b+sqrt(disc))/(3.0*a);
+          }
         }
         if (tmplam>0.5*alam)
           tmplam=0.5*alam;
@@ -390,7 +394,7 @@ void dfpmin(double p[], int n, double gtol, int* iter, double* fret, T* obj, U* 
       for (j=0; j<n; j++) xi[i] -= hessin[i][j]*g[j];
     }
   }
-  fprintf(stderr,"too many iterations in dfpmin");
+  streamlog_out(ERROR) << "too many iterations in dfpmin" << endl;
   delete[] dg;
   delete[] g;
   delete[] hdg;

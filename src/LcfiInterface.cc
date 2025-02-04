@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <algo/inc/pereventipfitter.h>
+#include "marlin/VerbosityLevels.h"
 
 #include <inc/track.h>
 #include <inc/trackstate.h>
@@ -167,13 +168,14 @@ LcfiInterface::flavtagVertex(vertex_lcfi::Vertex* lcfiVertex) const {
   }
 
   // make sure vertex contains at least two tracks
-  if (debug) fprintf(stderr,"returning flavtagVertex (%.2e,%.2e,%.2e) with ntrks=%d\n",
-                       vertex->_x, vertex->_y, vertex->_z, (int)vertex->getTracks().size());
+  if (debug) {
+    streamlog_out(ERROR) << "returning flavtagVertex (" << vertex->_x << "," << vertex->_y << "," << vertex->_z << " with ntrks=" << (int)vertex->getTracks().size() << endl;
+  }
   assert( vertex->getTracks().size() >= 2 );
   assert( vertex->getTracks().size() != 0 );
   if (vertex->getTracks().size() == 0) {
-    fprintf(stderr,"error: vertex has no tracks!!\n");
-    fprintf(stderr," lcfiVertex->tracks().size()=%d\n",(int)lcfiVertex->tracks().size());
+    streamlog_out(ERROR) << "error: vertex has no tracks!!" << endl;
+    streamlog_out(ERROR) << "lcfiVertex->tracks().size()=" << (int)lcfiVertex->tracks().size() << endl;
     exit(1);
   }
 
@@ -273,9 +275,12 @@ LcfiInterface::flavtagVertices(vertex_lcfi::DecayChain* chain) const {
 
 Vertex*
 LcfiInterface::findPrimaryVertex() {
-  if (debug) fprintf(stderr,"findPrimaryVertex()\n");
+  if (debug)
+    streamlog_out(ERROR) << "findPrimaryVertex()" << endl;
+
   if (_primaryVertex) {
-    if (debug) fprintf(stderr,"returning cached primary vertex\n");
+    if (debug)
+      streamlog_out(ERROR) << "returning cached primary vertex" << endl;
     return flavtagVertex(_primaryVertex);
   }
 
