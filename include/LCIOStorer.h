@@ -5,6 +5,7 @@
 #include "lcfiplus.h"
 #include <vector>
 #include <string>
+#include <tuple>
 
 #include "TObject.h"
 
@@ -64,6 +65,9 @@ class LCIOStorer : public TObject, public EventStoreObserver {
   //static bool energy_sort_trk(Track *a, Track *b);
   //static bool energy_sort_mc(MCParticle *a, MCParticle *b);
   static bool energy_sort_pfo(lcio::ReconstructedParticle* a, lcio::ReconstructedParticle* b);
+
+  // helper functions for interfacing with LCIO objects
+  static std::vector<lcio::Cluster*> extractClusters(lcio::ReconstructedParticle* pfo, double (&subE) [6], bool readSubdetectorEnergies );
 
   void setReadSubdetectorEnergies(bool flag) {
     _readSubdetectorEnergies = flag;

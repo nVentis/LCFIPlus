@@ -264,6 +264,23 @@ bool LCIOStorer::energy_sort_pfo(lcio::ReconstructedParticle* a, lcio::Reconstru
   return (a->getEnergy() > b->getEnergy());
 }
 
+std::vector<lcio::Cluster*> LCIOStorer::extractClusters(lcio::ReconstructedParticle* pfo, double (&subE) [6], bool readSubdetectorEnergies) {
+  std::vector<lcio::Cluster*> clusters = pfo->getClusters();
+  double clusEnergy(0);
+  for (int i=0; i<6; ++i)
+    subE[i]=0;
+  
+  if (readSubdetectorEnergies) {
+    for (unsigned int iclus=0; iclus<clusters.size(); ++iclus) {
+      clusEnergy += clusters[iclus]->getEnergy();
+      for (int i=0; i<6; ++i) {
+        subE[i] = clusters[iclus]->getSubdetectorEnergies()[i];
+      }
+    }
+  }
+
+  return clusters;
+}
 
 void LCIOStorer::SetEvent(lcio::LCEvent* evt) {
   // buffer check
@@ -457,17 +474,8 @@ void LCIOStorer::SetEvent(lcio::LCEvent* evt) {
 
       // find clusters
       vector<lcio::Cluster*> clusters = pfo->getClusters();
-      double clusEnergy(0);
       double subE[6];
-      for (int i=0; i<6; ++i) subE[i]=0;
-      if (_readSubdetectorEnergies) {
-        for (unsigned int iclus=0; iclus<clusters.size(); ++iclus) {
-          clusEnergy += clusters[iclus]->getEnergy();
-          for (int i=0; i<6; ++i) {
-            subE[i] = clusters[iclus]->getSubdetectorEnergies()[i];
-          }
-        }
-      }
+      clusters = extractClusters(pfo, subE, _readSubdetectorEnergies);
 
 //			cerr << (pfo->getCharge() ? "[Track]" : "[Neutral]") << pfo->getEnergy() << ", " << (unsigned int)pfo << endl;
 
@@ -729,14 +737,14 @@ void LCIOStorer::ReadVertices(const char* vtxname, vector<const Vertex*>* lcfico
           if (_trackLCIORel2.count(lciotr)) {
             flavtx->add(_trackLCIORel2[lciotr]);
           } else {
-            cerr << "LCIOStorer::SetEvent: Track associated to LCIO vertex is invalid!" << endl;
+            streamlog_out(WARNING) << "LCIOStorer::SetEvent: Track associated to LCIO vertex is invalid!" << endl;
             continue;
           }
         }
       } else {
         if (_ignoreLackOfVertexRP == false) {
-          cout << "LCIOStorer::SetEvent: no associated RP collection found for vertex collection '" << vtxname << "'. ";
-          cout << "Set IgnoreLackOfVertexRP to 1 to proceed." << endl;
+          streamlog_out(WARNING) << "LCIOStorer::SetEvent: no associated RP collection found for vertex collection '" << vtxname << "'. " << endl
+                                 << "Set IgnoreLackOfVertexRP to 1 to proceed." << endl;
           throw (Exception("LCIOStorer::SetEvent: vertex RP collection not found"));
         }
       }

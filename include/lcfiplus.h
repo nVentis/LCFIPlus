@@ -10,6 +10,7 @@
 #include "TObject.h"
 #include "TLorentzVector.h"
 #include "TVector3.h"
+#include "marlin/VerbosityLevels.h"
 
 #include "EventStore.h"
 #include "EVENT/Cluster.h"
