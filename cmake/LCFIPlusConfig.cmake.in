@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+message(STATUS "Found LCFIPlus (version @LCFIPlus_VERSION@)")
+
+include("${CMAKE_CURRENT_LIST_DIR}/LCFIPlusTargets.cmake")

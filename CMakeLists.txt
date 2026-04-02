@@ -138,6 +138,41 @@ TARGET_LINK_LIBRARIES( ${libname}
 	${onnxruntime_LIBRARY}
 )
 
+### CMakeConfig ########################################################
+
+install(TARGETS LCFIPlus
+  EXPORT LCFIPlusTargets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  PUBLIC_HEADER DESTINATION include
+)
+
+install(DIRECTORY include/ DESTINATION include)
+
+# Generate and install the config file
+SET( ${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/LCFIPlusConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/LCFIPlusConfig.cmake
+  INSTALL_DESTINATION lib/cmake/LCFIPlus
+  PATH_VARS ${PROJECT_NAME}_VERSION
+)
+
+# Install the config file and export targets
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/LCFIPlusConfig.cmake
+  DESTINATION lib/cmake/LCFIPlus
+)
+
+# Export the targets for the config file
+install(EXPORT LCFIPlusTargets
+  FILE LCFIPlusTargets.cmake
+  NAMESPACE LCFIPlus::
+  DESTINATION lib/cmake/LCFIPlus
+)
+
 ### EXECUTABLE MODE ########################################################
 
 # make rootdict for executable
